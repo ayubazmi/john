@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} {{ post.title_tag }} {% endblock %}
+{% block content %}
+
+current user:{{ user.id}}
+post author:{{ post.author.id}}
+<h1 xmlns="http://www.w3.org/1999/html">{{ post.title }}  </h1>
+<small> By:
+ {{ post.author.first_name}}
+ {{ post.author.last_name}} -
+ {{ post.post_date }} -
+ <small>
+   {% if user.is_authenticated %}
+      {% if user.id == post.author.id %}
+        <a href="{% url 'update_post' post.pk %}">Edit </a></small>|
+        <small> <a href="{% url 'delete_post' post.pk %}">Delete </a>
+      {% endif %}
+   {% endif %}
+
+ </small>  <br></small><br/>
+<hr>
+<br/>
+{% if post.header_image %}
+<img src="{{ post.header_image.url }}"><br/><br/>
+{% endif %}
+{{ post.body|safe }}
+<br/> <br/>
+<a href="{% url 'home' %}" class="btn btn-secondary">Back</a>
+<br/><br/>
+<hr>
+<br/>
+<form action="{% url 'like_post' post.pk %}" method="POST">
+    {% csrf_token %}
+    {% if user.is_authenticated %}
+    {% if liked %}
+    <button type="submit", name="post_id", value="{{ post.id }}", class="btn btn-danger btn-sm">Unlike</button>
+    {% else %}
+     <button type="submit", name="post_id", value="{{ post.id }}", class="btn btn-primary btn-sm">Like</button>
+     {% endif %}
+    {% else %}
+    <small>
+          <a  href="{% url 'login' %}">Login</a>to like</small>
+    {% endif %}
+    -{{ total_likes }} Likes
+
+
+</form>
+<br/><br/>
+<hr>
+<h2>Comments...</h2>
+
+
+<br/>
+{%  if not post.comments.all %}
+   No Comments Yet...<a href="{% url 'add_comment' post.pk %}">Add One</a>
+
+{% else %}
+<a href="{% url 'add_comment' post.pk %}">Add Comment</a>
+<div class="container">
+    <h2> Comments ({{comments.count}}) </h2>
+    <div class="my-2">
+        {% if user.is_authenticated %}
+        <form action="{% url 'postComment' %}" method="post">
+            {% csrf_token %}
+
+        {% else %}
+        Please login to post a comment
+        {% endif %}
+    </div>
+<br/><br/>
+
+{% endif %}
+
+<p>
+
+  <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+    Comments
+  </button>
+</p>
+<div class="collapse" id="collapseExample">
+  <div class="card card-body">
+      {%  for comment in post.comments.all %}
+<strong>{{ comment.name }} -
+    {{ comment.date_added }}
+</strong>
+<br/>
+{{ comment.body }}
+<div class="replied-comments container mt-2">
+
+
+
+    </div>
+
+</div>
+<br/><br/>
+
+{% endfor %}
+   </div>
+</div>
+
+
+
+<hr>
+<div class="card mb-3" >
+  <div class="row g-0">
+    <div class="col-md-2">
+
+        {% if post.author.profile.profile_pic %}
+         <img src="{{ post.author.profile.profile_pic.url  }}"  class="rounded-ccircle" width=70 height=70 alt="alter">
+          {%  else %}
+        <img src="{% static 'blog/images/360_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg' %}"  class="rounded-ccircle" width=70 height=70 alt="alter">
+
+
+
+        {% endif %}
+
+    </div>
+    <div class="col-md-10">
+      <div class="card-body">
+        <h5 class="card-title"> {{ post.author.first_name}}
+                    {{ post.author.last_name}}</h5>
+          <p class="small text-muted">
+                {% if  post.author.profile %}
+                     <a href="{% url 'user_profile' post.author.profile.id %}"> Profile Page</a> |
+                      {% else %}
+                  <a  href="{% url 'create_profile_page'  %}">Create User Profile</a>
+                {% endif %}
+
+              {% if post.author.profile.website_url %}
+             <a href="{{ post.author.profile.website_url }}"> Website</a> |
+              {% endif %}
+
+              {% if post.author.profile.facebook_url %}
+             <a href="{{ post.author.profile.facebook_url }}"> Facebook</a> |
+              {% endif %}
+
+              {% if post.author.profile.twitter_url %}
+             <a href="{{ post.author.profile.twitter_url }}"> Twitter</a>
+              {% endif %}
+
+
+          </p>
+        <p class="card-text">{{ post.author.profile.bio }}.</p>
+        <p class="card-text">Last updated 3 mins ago </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+{% endblock %}
